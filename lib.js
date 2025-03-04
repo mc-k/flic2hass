@@ -115,7 +115,7 @@ var ENTITIES = {
     ready: [
         "binary_sensor",
         {
-            entity_category: "config",
+            entity_category: "diagnostic",  // Changed from "config" to "diagnostic"
             expire_after: 5,
             device_class: "connectivity",
             name: "Connection Verified"
@@ -124,7 +124,7 @@ var ENTITIES = {
     activeDisconnect: [
         "binary_sensor",
         {
-            entity_category: "config",
+            entity_category: "diagnostic",  // Changed from "config" to "diagnostic"
             expire_after: 5,
             name: "User Active Disconnect"
         }
@@ -132,7 +132,7 @@ var ENTITIES = {
     passive: [
         "binary_sensor",
         {
-            entity_category: "config",
+            entity_category: "diagnostic",  // Changed from "config" to "diagnostic"
             expire_after: 5,
             name: "Passive Mode"
         }
