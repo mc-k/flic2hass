@@ -1,5 +1,16 @@
 'use strict';
 
+// helper function to ensure numeric values; addresses ERROR (MainThread) 
+// [homeassistant.components.mqtt.models] Exception raised while updating state of 
+// sensor.teabutton_button_battery ValueError: Sensor has device class 'battery' 
+// ... however, it has the non-numeric value: 'null'
+function validateNumericValue(value, defaultValue = 0) {
+    if (value === null || value === 'null' || value === 'unknown' || value === undefined) {
+        return defaultValue.toString();
+    }
+    return value.toString();
+}
+
 function makeLogger(prefix) {
     var debugMode = arguments.length > 1 && arguments[1] !== void 0 ? arguments[1] : false;
     return {
@@ -239,15 +250,28 @@ function makeButtonController(ha, buttonModule) {
             ha.publishState(genButtonUniqueId(button.bdaddr), "button_long_press", "ON");
         }
     };
-    var publishButtonMeta = function(button) {
-        ha.publishState(genButtonUniqueId(button.bdaddr), "battery", button.batteryStatus);
-        ha.publishState(genButtonUniqueId(button.bdaddr), "batteryLastUpdate", button.batteryTimestamp ? "".concat(Math.round((Date.now() - button.batteryTimestamp) / 1000)) : "unknown");
-        ha.publishState(genButtonUniqueId(button.bdaddr), "connected", button.connected ? "ON" : "OFF");
-        ha.publishState(genButtonUniqueId(button.bdaddr), "ready", button.ready ? "ON" : "OFF");
-        ha.publishState(genButtonUniqueId(button.bdaddr), "activeDisconnect", button.activeDisconnect ? "ON" : "OFF");
-        ha.publishState(genButtonUniqueId(button.bdaddr), "passive", button.activeDisconnect ? "ON" : "OFF");
-        ha.publishState(genButtonUniqueId(button.bdaddr), "lifeline", "ON");
-    };
+// modified version to address ERROR (MainThread) [homeassistant.components.mqtt.models] Exception raised...'
+var publishButtonMeta = function(button) {
+    ha.publishState(
+        genButtonUniqueId(button.bdaddr), 
+        "battery", 
+        validateNumericValue(button.batteryStatus, 0)
+    );
+    ha.publishState(
+        genButtonUniqueId(button.bdaddr), 
+        "batteryLastUpdate", 
+        validateNumericValue(
+            button.batteryTimestamp ? 
+                Math.round((Date.now() - button.batteryTimestamp) / 1000) : 
+                0
+        )
+    );
+    ha.publishState(genButtonUniqueId(button.bdaddr), "connected", button.connected ? "ON" : "OFF");
+    ha.publishState(genButtonUniqueId(button.bdaddr), "ready", button.ready ? "ON" : "OFF");
+    ha.publishState(genButtonUniqueId(button.bdaddr), "activeDisconnect", button.activeDisconnect ? "ON" : "OFF");
+    ha.publishState(genButtonUniqueId(button.bdaddr), "passive", button.activeDisconnect ? "ON" : "OFF");
+    ha.publishState(genButtonUniqueId(button.bdaddr), "lifeline", "ON");
+};
     var addBtn = function(eventName) {
         return function(obj) {
             var button = buttonModule.getButton(obj.bdaddr);
